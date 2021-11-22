@@ -1,0 +1,1749 @@
+openapi: 3.0.0
+info:
+  title: Fin API
+  version: 4.0.0
+  description: |-
+    Use this API to:
+
+    Post custom events to Analytics or to pull Fin Events or Heartbeats into your own data store for analysis.
+
+    Consume and manage the settings of your Fin Users.
+
+    Pagination:
+    The Fin API returns paginated results from our list endpoints. Our pagination works as follows:
+    * page_size: an integer between 100 and 10,000 (inclusive) specifying the number of results per page
+    * page_number: an integer (starting at 0) specifying the page offset
+    * end_ts: an ISO 8601 string specifying a maximum timestamp for returned events. Must be between 1 minute and 1 hour after the begin_ts parameter (by default, 1 hour)
+  contact:
+    email: support@fin.com
+    name: Support
+    url: 'https://www.fin.com/supportfin.com/support'
+servers:
+  - url: 'https://analytics-api.fin.com/api/v4'
+security:
+  - bearerAuth: []
+paths:
+  /users:
+    get:
+      summary: Get Users
+      description: Get a list of users and their information for your organization.
+      operationId: usersGet
+      parameters:
+        - in: query
+          name: page_size
+          schema:
+            type: string
+          description: 'The number of results to return from each call to the endpoint. Must be between 100 and 10,000. Default value is 1,000.'
+        - in: query
+          name: page_number
+          schema:
+            type: string
+          description: The page number offset of results to retrieve. The first page is 0. Default value is 0
+        - in: query
+          name: role
+          schema:
+            type: string
+          description: 'The user role that you would like to have returned. If not specified, all roles will be returned.'
+        - in: query
+          name: status
+          schema:
+            type: string
+          description: 'The status of the users you would like returned by this endpoint. If you do not specify a status, you will get all users.'
+        - in: query
+          name: created_at
+          schema:
+            type: string
+            format: date-time
+          description: Users created after this date will be returned by this endpoint.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+              examples:
+                usersList:
+                  value:
+                    - clip_creation: default
+                      created_at: 'Mon, 22 Nov 2021 17:04:18 GMT'
+                      deleted_at: null
+                      dom_monitoring: default
+                      email_address: haley@fin.com
+                      employee_compensation: default
+                      extension_status: default
+                      id: 1ba9136f-a06c-45ff-b375-7a7ec0ada559
+                      manager: null
+                      microphone_recording: default
+                      name: Haley Deveney
+                      pause_analytics: default
+                      recording_quality: default
+                      role: member
+                      start_date: null
+                      stats_page_access: default
+                      subscribers: []
+                      system_audio_recording: default
+                      tags: []
+                      title: null
+                      video_recording: default
+                      video_redaction_minutes: 5
+                      video_view_access: disabled
+                      viewable_user_tags: []
+                    - clip_creation: internal
+                      created_at: 'Thu, 15 Jul 2021 20:36:18 GMT'
+                      deleted_at: null
+                      dom_monitoring: enabled
+                      email_address: test@finxpc.com
+                      employee_compensation: default
+                      extension_status: default
+                      id: f6bd81a8-a346-4240-b586-3f3324ffe692
+                      manager: david@fin.com
+                      microphone_recording: disabled
+                      name: Testy Testerson
+                      pause_analytics: default
+                      recording_quality: low
+                      role: admin
+                      start_date: '2021-11-22T18:13:32+00:00'
+                      stats_page_access: disabled
+                      subscribers:
+                        - david@fin.com
+                      system_audio_recording: disabled
+                      tags:
+                        - Sales
+                        - Analytics
+                      title: testing in prod
+                      video_recording: optional
+                      video_redaction_minutes: 0
+                      video_view_access: default
+                      viewable_user_tags: []
+        '400':
+          description: Bad Request
+      tags:
+        - Users
+  /user:
+    get:
+      summary: Get User
+      description: Get information about a user in your organization given an id or email address (at least one of id or email address must be provided in the request)
+      operationId: userGet
+      parameters:
+        - in: query
+          name: id
+          schema:
+            type: string
+          description: 'The unique ID for the user in your organization. This is a UUID string used by Fin to identify a user, e.g. 8d7d41cb-b564-4fdd-bef2-47ab8e70b862'
+        - in: query
+          name: email_address
+          schema:
+            type: string
+          description: The email address for a user in your organization
+          required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                Example:
+                  value:
+                    clip_creation: external
+                    created_at: 'Tue, 16 Mar 2021 00:51:32 GMT'
+                    deleted_at: null
+                    dom_monitoring: enabled
+                    email_address: andrew@fin.com
+                    employee_compensation: '16.45'
+                    extension_status: default
+                    id: b378181a-60fe-45ed-92fd-3f593260eff0
+                    manager: ec2@fin.com
+                    microphone_recording: optional
+                    name: Andrew J
+                    pause_analytics: default
+                    recording_quality: highest
+                    role: admin
+                    start_date: 'Mon, 15 Mar 2021 00:00:00 GMT'
+                    stats_page_access: enabled
+                    subscribers:
+                      - yoshi@fin.com
+                      - chewie@fin.com
+                    system_audio_recording: optional
+                    tags:
+                      - Product Manager
+                      - Analytics
+                    title: Product
+                    video_recording: disabled
+                    video_redaction_minutes: 5
+                    video_view_access: disabled
+                    viewable_user_tags:
+                      - Sales
+                      - Solutions Engineers
+        '401':
+          description: Unauthorized
+      tags:
+        - Users
+    post:
+      summary: Create User
+      description: Create a new user in your organization
+      operationId: userPost
+      tags:
+        - Users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                Example:
+                  value:
+                    clip_creation: internal
+                    created_at: 'Fri, 27 Aug 2021 22:56:28 GMT'
+                    deleted_at: null
+                    dom_monitoring: enabled
+                    email_address: yoshi@fin.com
+                    employee_compensation: '15.15'
+                    extension_status: default
+                    id: 618a7554-4a5e-4f05-82dd-0bd29ac72c7d
+                    manager: null
+                    microphone_recording: optional
+                    name: Yoshi Z
+                    pause_analytics: default
+                    recording_quality: medium
+                    role: admin
+                    start_date: 'Fri, 01 Jan 2021 00:00:00 GMT'
+                    stats_page_access: enabled
+                    subscribers: []
+                    system_audio_recording: required
+                    tags:
+                      - Product Manager
+                      - Data Team
+                    title: Long Jumper
+                    video_recording: required
+                    video_redaction_minutes: 5
+                    video_view_access: enabled
+                    viewable_user_tags: []
+        '400':
+          description: Bad Request
+    parameters: []
+  '/user/{email_or_id}':
+    delete:
+      summary: Deactivate User
+      description: Deactivate a user with a given user_id or email
+      operationId: userDelete
+      parameters:
+        - in: path
+          name: email_or_id
+          schema:
+            type: string
+          description: The id or email of the user you would like to deactivate
+          required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                Example:
+                  value:
+                    clip_creation: external
+                    created_at: 'Tue, 16 Mar 2021 00:51:32 GMT'
+                    deleted_at: 'Fri, 1 Oct 2021 15:51:32 GMT'
+                    dom_monitoring: enabled
+                    email_address: andrew@fin.com
+                    employee_compensation: '16.45'
+                    extension_status: default
+                    id: b378181a-60fe-45ed-92fd-3f593260eff0
+                    manager: ec2@fin.com
+                    microphone_recording: optional
+                    name: Andrew J
+                    pause_analytics: default
+                    recording_quality: highest
+                    role: admin
+                    start_date: 'Mon, 15 Mar 2021 00:00:00 GMT'
+                    stats_page_access: enabled
+                    subscribers:
+                      - yoshi@fin.com
+                      - chewie@fin.com
+                    system_audio_recording: optional
+                    tags:
+                      - Product Manager
+                      - Analytics
+                    title: Product
+                    video_recording: disabled
+                    video_redaction_minutes: 5
+                    video_view_access: disabled
+                    viewable_user_tags:
+                      - Sales
+                      - Solutions Engineers
+        '400':
+          description: Bad Request
+      tags:
+        - Users
+    post:
+      summary: ''
+      operationId: userUpdate
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                Example:
+                  value:
+                    clip_creation: internal
+                    created_at: 'Fri, 27 Aug 2021 22:56:28 GMT'
+                    deleted_at: null
+                    dom_monitoring: enabled
+                    email_address: yoshi@fin.com
+                    employee_compensation: '15.15'
+                    extension_status: disabled
+                    id: 618a7554-4a5e-4f05-82dd-0bd29ac72c7d
+                    manager: chewie@fin.com
+                    microphone_recording: optional
+                    name: Yoshi Z
+                    pause_analytics: default
+                    recording_quality: medium
+                    role: admin
+                    start_date: 'Fri, 01 Jan 2021 00:00:00 GMT'
+                    stats_page_access: enabled
+                    subscribers: []
+                    system_audio_recording: required
+                    tags:
+                      - Product Manager
+                    title: Long Jumper
+                    video_recording: required
+                    video_redaction_minutes: 5
+                    video_view_access: enabled
+                    viewable_user_tags: []
+        '201':
+          description: Created
+      description: Update an existing user in your organization
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties: {}
+      tags:
+        - Users
+      parameters: []
+    parameters:
+      - schema:
+          type: string
+        name: email_or_id
+        in: path
+        required: true
+        description: Email address or user id of user to update
+  /events:
+    post:
+      summary: Events Post
+      description: Create a new event in Fin Analytics.
+      operationId: eventsPost
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email_address:
+                  type: string
+                  description: 'The email address of the fin-analytics user you are logging this event for. If a user without this email is not found in your organization, the request will be rejected.'
+                  example: kortina@finxpc.com
+                is_point_event:
+                  type: boolean
+                  description: 'Whether or not this event has a duration- if true, the event has no duration and should not have an end_ts; if false, the event has duration and will have an end_ts (though it does not need to be provided in the initial POST).All events are either point events or duration events.For point events, end_ts will be ignored.For duration events, you can either supply both begin_ts and end_ts upfront, or log begin_ts and end_ts separately so long as the same record_id and event_type is provided in both requests to identify the record.'
+                begin_ts:
+                  type: string
+                  description: 'The start time of this event in UTC as an ISO 8601 string. This param is required for point events. In cases where duration event is logged in two separate requests, an event with a begin_ts must be logged before one with an end_ts having the same event_type and record_id.'
+                  example: '2021-03-15T08:30:25-0700'
+                event_type:
+                  type: string
+                  description: A string that denotes the type of this event. Certain event_type strings are given special meaning by Fin Analytics and enable us to create more advanced custom dashboards for your organization.
+                Special event types:
+                  type: string
+                  description: 'fa_handle_case (is_point_event- false)- Most teams will have a concept of a ''case'' or a ''ticket'' that identifies a particular task that needs to be acknowledged, worked through, and finished. This event type logs a member''s working session on this ticket.fa_break (is_point_event- true)- Break events have a start and end and mark time blocks where no events are expected to happen. These windows will be incorporated into your default analytics dashboards.Event types must not begin with fa* unless they are one of the above-listed special types.'
+                end_ts:
+                  type: string
+                  description: The end time of this event in UTC as an ISO 8601 string. Ignored when is_point_event is true.
+                  example: '2021-03-15T08:45:25-0700'
+                _properties:
+                  type: object
+                  description: Optional metadata to associate with this event. You can use these properties as filters when browsing the Fin Analytics dashboards.
+                record_id:
+                  type: string
+                  description: An optional string that will uniquely track a particular entity across all events of the same event_type.
+                  example: lock-session-123
+                customer_id:
+                  type: string
+                  description: An optional identifier for your customer.
+      tags:
+        - Events
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  event_type:
+                    type: string
+                  is_point_event:
+                    type: boolean
+                  properties:
+                    type: object
+                  record_id:
+                    type: string
+                  customer_id:
+                    type: string
+                  begin_ts:
+                    type: string
+                  end_ts:
+                    type: string
+              examples:
+                Example:
+                  value:
+                    id: eyx385
+                    event_type: fa_handle_case
+                    record_id: '12345'
+                    is_point_event: false
+                    properties:
+                      tags:
+                        - New York
+                        - Escalated
+                      ticket_category: Support
+                    customer_id: '1839'
+                    begin_ts: '2019-01-29T14:02:32.24298'
+                    end_ts: '2019-01-29T14:02:32.24298'
+        '401':
+          description: Unauthorized
+        '422':
+          description: Unprocessable Entity
+    get:
+      summary: Events get
+      description: 'Returns up to one hour''s worth of logged events for your organization, starting from the requested begin_ts. Currently returns events of type page_visit; more event types will be added to this service. page_visit events are a summary of a user''s time actively interacting with a specific Chrome tab. These events begin once a user becomes ''active'' on a page (navigates to it, switches tabs to it, or resumes activity from being ''idle'' on the tab already), and end once a user leaves the page or goes ''idle'' (at least 60 seconds of no movement / keystrokes, or unfocuses from Chrome all together).'
+      operationId: events
+      tags:
+        - Events
+      parameters:
+        - in: query
+          name: begin_ts
+          schema:
+            type: string
+          description: 'The start time from which you wish to receive logs, in UTC as an ISO 8601 string.'
+          required: true
+        - in: query
+          name: page_size
+          schema:
+            type: string
+          description: 'The number of results to return from each call to the endpoint. Must be between 100 and 10,000. Default value is 1,000.'
+          required: true
+        - in: query
+          name: page_number
+          schema:
+            type: string
+          description: The page number offset of results to retrieve. The first page is 0. Default value is 0
+          required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  begin_ts:
+                    type: string
+                    description: The start time of this event as reported by the client's machine in UTC as an ISO 8601 string.
+                  case_resource_external_id:
+                    type: string
+                    description: 'The ID of any associated record within your case system of record, e.g. Zendesk Ticket # or Salesforce Case #.'
+                  case_service_name:
+                    type: string
+                    description: 'The name of your case system of record, e.g. Zendesk or Salesforce.'
+                  case_session_id:
+                    type: string
+                    description: The unique ID for any associated 'session' of work activity and time associated with this event.
+                  created_at:
+                    type: string
+                    description: 'The time this event was created within the fin-analytics system in the format Day, DD Mmm YYYY HH:MM:SS GMT.'
+                  customer_id:
+                    type: string
+                    description: Customer ID (if any) associated with this event by a Workflow.
+                  duration_ms:
+                    type: integer
+                    description: The duration of this event in milliseconds (difference between end_ts and begin_ts).
+                  end_ts:
+                    type: string
+                    description: The end time of this event as reported by the client's machine in UTC as an ISO 8601 string.
+                  fin_extension_version:
+                    type: string
+                    description: The version of the fin-analytics Chrome extension from which this event was logged.
+                  id:
+                    type: string
+                    description: 'The unique ID for the event. This is a UUID string used by Analytics to identify an event, e.g. 8d7d41cb-b564-4fdd-bef2-47ab8e70b862.'
+                  page_host:
+                    type: string
+                    description: 'The sub-domain + domain + top-level-domain of the active page during this event, e.g. analytics.fin.com.'
+                  page_title:
+                    type: string
+                    description: 'The Chrome tab title for the active page during this event, e.g. Fin Analytics - search.'
+                  page_url:
+                    type: string
+                    description: 'The full URL for the active page during this event, e.g. https://analytics.fin.com/search'
+                  resource_external_id:
+                    type: string
+                    description: 'The ID (if any) of a record for a recognized service associated with this event, e.g. 11klgaEhdZybQxSGrWcthrBybc6rJnknASpDkkrCW as a Google Doc ID.'
+                  resource_service_name:
+                    type: string
+                    description: 'The name (if any) of a recognized service associated with this event, e.g. Google Docs.'
+                  schema_name:
+                    type: string
+                    description: 'The type of event being returned,page_visit_event'
+                  ui_arrow_keypress:
+                    type: integer
+                    description: Count of arrow keys pressed during this page event.
+                  ui_backspace_keypress:
+                    type: integer
+                    description: Count of backspace keys pressed during this page event
+                  ui_chrome_notification_close_click:
+                    type: integer
+                    description: Count of Chrome notification's closed during this page event.
+                  ui_chrome_notification_url_click:
+                    type: integer
+                    description: Count of Chrome notification links clicked during this page event.
+                  ui_chrome_notification_view:
+                    type: integer
+                    description: Count of Chrome notifications seen during this page event.
+                  ui_copy_paste_keypress:
+                    type: integer
+                    description: Count of copy+paste key combination presses during this page event.
+                  ui_keypress:
+                    type: integer
+                    description: Count of all other keys pressed (exclusive of other keys rolled up as their own ui_event) during this page event.
+                  ui_modifier_arrow_keypress:
+                    type: integer
+                    description: Count of arrow keys pressed while holding a modifier key like Shift or Ctrl during this page event.
+                  ui_modifier_backspace_keypress:
+                    type: integer
+                    description: Count of backspace keys pressed while holding a modifier key like Shift or Ctrl during this page event.
+                  ui_modifier_bracket_keypress:
+                    type: integer
+                    description: Count of bracket keys pressed while holding a modifier key like Shift or Ctrl during this page event.
+                  ui_modifier_tab_keypress:
+                    type: integer
+                    description: Count of tab key presses while holding a modifier key like Shift or Ctrl during this page event.
+                  ui_mouse_click:
+                    type: integer
+                    description: Count of clicks made during this page event.
+                  ui_mouse_move:
+                    type: integer
+                    description: Count of pixels tracked across during this page event.
+                  ui_mouse_scroll:
+                    type: integer
+                    description: Count of pixels scrolled across during this page event
+                  ui_tab_or_shift_tab_keypress:
+                    type: integer
+                    description: Count of tab or shift+tab keys pressed during this page event
+                  updated_at:
+                    type: string
+                    description: 'The time this event was last updated within the fin-analytics system in the format Day, DD Mmm YYYY HH:MM:SS GMT.'
+                  user_id:
+                    type: string
+                    description: The unique ID for this user. You can look up more details about this user from the users table.
+                  user_email_address:
+                    type: string
+                    description: Unique email address for the user in your organization
+                  video_player_url:
+                    type: string
+                    description: A URL pointed directly at the video timeline for this user at the begin_ts of this event.
+              examples:
+                Example:
+                  value:
+                    events:
+                      - begin_ts: '2019-10-16T17:00:20.460000'
+                        case_resource_external_id: null
+                        case_service_name: null
+                        case_session_id: null
+                        created_at: 'Wed, 16 Oct 2019 17:21:51 GMT'
+                        customer_id: null
+                        duration_ms: 7121
+                        end_ts: '2019-10-16T17:00:27.581000'
+                        fin_extension_version: '0.81'
+                        id: 4d2d6b08-e9e9-4f45-989c-8667d1802a87
+                        page_host: mail.google.com
+                        page_title: Inbox (15) - fin Mail
+                        page_url: 'https://mail.google.com/mail/u/0/#inbox'
+                        resource_external_id: null
+                        resource_service_name: null
+                        schema_name: page_visit_event
+                        ui_arrow_keypress: 0
+                        ui_backspace_keypress: 0
+                        ui_chrome_notification_close_click: 0
+                        ui_chrome_notification_url_click: 0
+                        ui_chrome_notification_view: 0
+                        ui_copy_paste_keypress: 0
+                        ui_keypress: 0
+                        ui_modifier_arrow_keypress: 0
+                        ui_modifier_backspace_keypress: 0
+                        ui_modifier_bracket_keypress: 0
+                        ui_modifier_tab_keypress: 0
+                        ui_mouse_click: 0
+                        ui_mouse_move: 0
+                        ui_mouse_scroll: 0
+                        ui_tab_or_shift_tab_keypress: 0
+                        updated_at: 'Wed, 16 Oct 2019 17:21:51 GMT'
+                        user_id: feb229fc-cff0-4e07-ae51-740b719c3adb
+                        user_email_address: test@finxpc.com
+                        video_player_url: 'https://analytics.fin.com/dashboard/users/39?ts=2019-10-16T17%3A00%3A20.460000Z'
+                      - begin_ts: '2019-10-16T17:00:21.490000'
+                        case_resource_external_id: null
+                        case_service_name: null
+                        case_session_id: null
+                        created_at: 'Wed, 16 Oct 2019 17:20:51 GMT'
+                        customer_id: null
+                        duration_ms: 54095
+                        end_ts: '2019-10-16T17:01:15.585000'
+                        fin_extension_version: '0.81'
+                        id: 705598f2-7163-416b-a5d3-1e81fa631f94
+                        page_host: mail.google.com
+                        page_title: Compose Mail - fin Mail
+                        page_url: 'https://mail.google.com/mail/u/0/?ui=2&view=btop&ver=1f0kx8mmmcsqq#cmid%2234'
+                        resource_external_id: null
+                        resource_service_name: null
+                        schema_name: page_visit_event
+                        ui_arrow_keypress: 0
+                        ui_backspace_keypress: 0
+                        ui_chrome_notification_close_click: 0
+                        ui_chrome_notification_url_click: 0
+                        ui_chrome_notification_view: 0
+                        ui_copy_paste_keypress: 0
+                        ui_keypress: 0
+                        ui_modifier_arrow_keypress: 0
+                        ui_modifier_backspace_keypress: 0
+                        ui_modifier_bracket_keypress: 0
+                        ui_modifier_tab_keypress: 0
+                        ui_mouse_click: 0
+                        ui_mouse_move: 8
+                        ui_mouse_scroll: 0
+                        ui_tab_or_shift_tab_keypress: 0
+                        updated_at: 'Wed, 16 Oct 2019 17:20:51 GMT'
+                        user_id: 250100b0-4ace-42aa-a6ff-ef4a319d7287
+                        user_email_address: test@finxpc.com
+                        video_player_url: 'https://analytics.fin.com/dashboard/users/7?ts=2019-10-16T17%3A00%3A21.490000Z'
+                      - begin_ts: '2019-10-16T17:00:27.581000'
+                        case_resource_external_id: null
+                        case_service_name: null
+                        case_session_id: null
+                        created_at: 'Wed, 16 Oct 2019 17:21:51 GMT'
+                        customer_id: null
+                        duration_ms: 3410
+                        end_ts: '2019-10-16T17:00:30.991000'
+                        fin_extension_version: '0.81'
+                        id: 67b4ea89-d13b-4e61-ba09-d4ded945dc6c
+                        page_host: calendar.google.com
+                        page_title: 'fin - Calendar - Week of October 13, 2019'
+                        page_url: 'https://calendar.google.com/calendar/r/week/2019/10/16?eid=MjZucDR2djMzbXRkbzQyNTk5NW50aXFuNW4gYWxlY0BmaW54cGMuY29t&rst=3&ctz=America/Los_Angeleasdfasdfsf=true&response_updated=1'
+                        resource_external_id: null
+                        resource_service_name: null
+                        schema_name: page_visit_event
+                        ui_arrow_keypress: 0
+                        ui_backspace_keypress: 0
+                        ui_chrome_notification_close_click: 0
+                        ui_chrome_notification_url_click: 0
+                        ui_chrome_notification_view: 0
+                        ui_copy_paste_keypress: 0
+                        ui_keypress: 0
+                        ui_modifier_arrow_keypress: 0
+                        ui_modifier_backspace_keypress: 0
+                        ui_modifier_bracket_keypress: 0
+                        ui_modifier_tab_keypress: 0
+                        ui_mouse_click: 0
+                        ui_mouse_move: 0
+                        ui_mouse_scroll: 0
+                        ui_tab_or_shift_tab_keypress: 0
+                        updated_at: 'Wed, 16 Oct 2019 17:21:51 GMT'
+                        user_id: feb229fc-cff0-4e07-ae51-740b719c3adb
+                        user_email_address: test@finxpc.com
+                        video_player_url: 'https://analytics.fin.com/dashboard/users/39?ts=2019-10-16T17%3A00%3A27.581000Z'
+                    page_size: 1000
+                    page_number: 0
+                    begin_ts: '2019-10-16T17:00:00'
+                    end_ts: '2019-11-16T18:00:00'
+                    more_results: false
+        '401':
+          description: Unauthorized
+  /event_ended:
+    put:
+      summary: Events Put
+      description: Create a new event in Fin Analytics.
+      operationId: eventsPut
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email_address:
+                  type: string
+                  description: The email address of the fin-analytics this event was posted with.
+                  example: kortina@finxpc.com
+                end_ts:
+                  type: string
+                  description: The end time of this event in UTC as an ISO 8601 string
+                  example: '2021-03-15T08:30:25-0700'
+                event_type:
+                  type: string
+                  description: The event_type that you originally posted for this event
+                  example: fa_handle_case
+                record_id:
+                  type: string
+                  description: The entity identifier that was originally posted with your duration event.
+                  example: lock-session-123
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  event_type:
+                    type: string
+                  is_point_event:
+                    type: boolean
+                  properties:
+                    type: object
+                  record_id:
+                    type: string
+                  customer_id:
+                    type: string
+                  begin_ts:
+                    type: string
+                  end_ts:
+                    type: string
+              examples:
+                Example:
+                  value:
+                    id: eyx385
+                    event_type: fa_handle_case
+                    record_id: '12345'
+                    is_point_event: false
+                    properties:
+                      tags:
+                        - New York
+                        - Escalated
+                      ticket_category: Support
+                    customer_id: '1839'
+                    begin_ts: '2019-01-29T14:02:32.24298'
+                    end_ts: '2019-01-29T14:02:32.24298'
+        '401':
+          description: Unauthorized
+        '422':
+          description: Unprocessable Entity
+      tags:
+        - Events
+  /heartbeat_events:
+    get:
+      summary: Heartbeat Events
+      description: 'Returns up to one hour''s worth of logged heartbeat events for your organization, starting from the requested begin_ts. heartbeat_events are ''point events'' (no end_ts nor duration) logged every 60 seconds from each user''s machine. These events are a ''snapshot'' of machine and Chrome statistics at the moment of sampling. Each heartbeat_event rolls up machine, browser, and activity information over the 60 seconds preceding the event''s begin_ts'
+      operationId: heartbeat_events
+      parameters:
+        - in: query
+          name: begin_ts
+          schema:
+            type: string
+          description: 'The start time from which you wish to receive logs, in UTC as an ISO 8601 string.'
+          required: true
+        - in: query
+          name: end_ts
+          schema:
+            type: string
+          description: 'The end time from which you wish to receive logs, in UTC as an ISO 8601 string. Must be between 1 minute and 1 hour later than begin_ts. Default value is 1 hour later than begin_ts.'
+        - in: query
+          name: page_size
+          schema:
+            type: string
+          description: 'The number of results to return from each call to the endpoint. Must be between 100 and 10,000. Default value is 1,000.'
+        - in: query
+          name: page_number
+          schema:
+            type: string
+          description: The page number offset of results to retrieve. The first page is 0. Default value is 0
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  begin_ts:
+                    type: string
+                    description: The start time of this event as reported by the client's machine in UTC as an ISO 8601 string.
+                  chrome_version:
+                    type: string
+                    description: Version of Google Chrome browser this event was logged from.
+                  cpu_architecture_name:
+                    type: string
+                    description: Description of the CPU architecture associated with the machine this event was logged from.
+                  cpu_idle_time:
+                    type: number
+                    description: Amount of CPU time available for allocation to processes at the time of this event.
+                  cpu_kernel_time:
+                    type: number
+                    description: Amount of CPU time allocated to kernel processes at the time of this event.
+                  cpu_model_name:
+                    type: string
+                    description: Name of the CPU Model associated with the machine this event was logged from.
+                  cpu_total_time:
+                    type: number
+                    description: Total CPU time (allocated and available) at the time of this event.
+                  cpu_user_time:
+                    type: number
+                    description: Amount of CPU time allocated to user processes at the time of this event.
+                  created_at:
+                    type: string
+                    description: 'The time this event was created within the fin-analytics system in the format Day, DD Mmm YYYY HH:MM:SS GMT.'
+                  display_id:
+                    type: string
+                    description: ID of the display (monitor) most recently active at the time of this event.
+                  end_ts:
+                    type: string
+                    description: The end time of this event as reported by the client's machine in UTC as an ISO 8601 string.
+                  fin_extension_version:
+                    type: string
+                    description: The version of the fin-analytics Chrome extension from which this event was logged.
+                  id:
+                    type: string
+                    description: The unique ID for the event. This is a UUID string used by Analytics to identify an event.
+                  is_point_event:
+                    type: boolean
+                    description: 'For heartbeat_events this should always be TRUE. These events are a single sample, not continuous events.'
+                  memory_mb_available:
+                    type: number
+                    description: Memory reported available (in Megabytes) at the time of this event.
+                  memory_mb_total:
+                    type: number
+                    description: 'Total memory reported (allocated and available, in Megabytes) at the time of this event.'
+                  num_chrome_tabs_open:
+                    type: number
+                    description: Count of Chrome tabs open across all logged Chrome windows at the time of this event.
+                  num_cpus:
+                    type: number
+                    description: Count of CPUs associated with the machine this event was logged from.
+                  num_displays_recorded:
+                    type: number
+                    description: Count of displays (monitors) being recorded by fin-analytics at the time of this event.
+                  num_total_displays:
+                    type: number
+                    description: Count of displays (monitors) reporting event data to fin-analytics at the time of this event.
+                  os_name:
+                    type: string
+                    description: Name of the Operating System associated with the machine this event was logged from.
+                  schema_name:
+                    type: string
+                    description: 'The type of event being returned, e.g. heartbeat_event. Either mac, win, or cros.'
+                  tab_id:
+                    type: number
+                    description: ID of the Chrome tab most recently active at the time of this event.
+                  tab_index:
+                    description: number  Chrome tab index within it's respective Chrome window for the most recently active tab at the time of this event .
+                  tab_is_frontmost_in_window:
+                    type: boolean
+                    description: Is the most recently active tab at the time of this event the foremost item in the Chrome window?
+                  ui_arrow_keypress:
+                    type: integer
+                    description: Count of arrow keys pressed during this page event.
+                  ui_backspace_keypress:
+                    type: integer
+                    description: Count of backspace keys pressed during this page event.
+                  ui_chrome_notification_close_click:
+                    type: integer
+                    description: Count of Chrome notification's closed during this page event.
+                  ui_chrome_notification_url_click:
+                    type: integer
+                    description: Count of Chrome notification links clicked during this page event.
+                  ui_chrome_notification_view:
+                    type: integer
+                    description: Count of Chrome notifications seen during this page event.
+                  ui_copy_paste_keypress:
+                    type: integer
+                    description: Count of copy+paste key combination presses during this page event.
+                  ui_keypress:
+                    type: integer
+                    description: Count of all other keys pressed (exclusive of other keys rolled up as their own ui_event) during this page event.
+                  ui_modifier_arrow_keypres:
+                    type: integer
+                    description: Count of arrow keys pressed while holding a modifier key like Shift or Ctrl during this page event.
+                  ui_modifier_backspace_keypress:
+                    type: integer
+                    description: Count of backspace keys pressed while holding a modifier key like Shift or Ctrl during this page event.
+                  ui_modifier_bracket_keypress:
+                    type: integer
+                    description: Count of bracket keys pressed while holding a modifier key like Shift or Ctrl during this page event.
+                  ui_modifier_tab_keypress:
+                    type: integer
+                    description: Count of tab key presses while holding a modifier key like Shift or Ctrl during this page event.
+                  ui_mouse_click:
+                    type: integer
+                    description: Count of clicks made during this page event.
+                  ui_mouse_move:
+                    type: integer
+                    description: Count of pixels tracked across during this page event.
+                  ui_mouse_scroll:
+                    type: integer
+                    description: Count of pixels scrolled across during this page event.
+                  ui_tab_or_shift_tab_keypress:
+                    type: integer
+                    description: Count of tab or shift+tab keys pressed during this page event
+                  user_agent:
+                    type: string
+                    description: The unique ID for this user and machine.
+                  user_id:
+                    type: string
+                    description: The unique ID for this user. You can look up more details about this user from the users table.
+                  user_email_address:
+                    type: string
+                    description: Unique email address for the user in your organization.
+                  video_player_url:
+                    type: string
+                    description: A URL pointed directly at the video timeline for this user at the begin_ts of this event.
+                  was_chrome_active:
+                    type: boolean
+                    description: Indicates whether user was actively interacting within the Chrome browser at the time this event was logged.
+                  was_paused_audio:
+                    type: boolean
+                    description: Indicates whether user had audio recording paused at the time this event was logged.
+                  was_paused_browser_events:
+                    type: boolean
+                    description: Indicates whether user had browser event capture paused at the time this event was logged.
+                  was_paused_video:
+                    type: boolean
+                    description: Indicates whether user had video recording paused at the time this event was logged.
+                  was_recording_audio:
+                    type: boolean
+                    description: Indicates whether user was recording audio at the time this event was logged.
+                  was_recording_browser_events:
+                    type: boolean
+                    description: Indicates whether user was recording browser events at the time this event was logged.
+                  was_recording_video:
+                    type: boolean
+                    description: Indicates whether user was recording audio at the time this event was logged.
+                  window_id:
+                    type: number
+                    description: ID of the Chrome window most recently active at the time of this event.
+              examples:
+                Example:
+                  value:
+                    heartbeat_events:
+                      - begin_ts: '2019-07-02T19:06:08.694000'
+                        chrome_version: 74.0.3729.157
+                        cpu_architecture_name: x86_64
+                        cpu_idle_time: 99161712
+                        cpu_kernel_time: 2929065
+                        cpu_model_name: Intel(R) Core(TM) i7-8850H CPU @ 2.60GHz
+                        cpu_total_time: 105339195
+                        cpu_user_time: 3248418
+                        created_at: 'Tue, 02 Jul 2019 19:06:08 GMT'
+                        display_id: '69504859'
+                        end_ts: null
+                        fin_extension_version: '0.66'
+                        id: 5f9a2ad9-4802-4015-b291-c20a4e73fa46
+                        is_point_event: true
+                        memory_mb_available: 157
+                        memory_mb_total: 32768
+                        num_chrome_tabs_open: 10
+                        num_cpus: 12
+                        num_displays_recorded: 2
+                        num_total_displays: 2
+                        os_name: mac
+                        schema_name: heartbeat_event
+                        tab_id: 825
+                        tab_index: 0
+                        tab_is_frontmost_in_window: true
+                        ui_arrow_keypress: 0
+                        ui_backspace_keypress: 0
+                        ui_chrome_notification_close_click: 0
+                        ui_chrome_notification_url_click: 0
+                        ui_chrome_notification_view: 0
+                        ui_copy_paste_keypress: 0
+                        ui_keypress: 0
+                        ui_modifier_arrow_keypress: 0
+                        ui_modifier_backspace_keypress: 0
+                        ui_modifier_bracket_keypress: 0
+                        ui_modifier_tab_keypress: 0
+                        ui_mouse_click: 1
+                        ui_mouse_move: 264
+                        ui_mouse_scroll: 0
+                        ui_tab_or_shift_tab_keypress: 0
+                        user_agent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.157 Safari/537.36'
+                        user_id: 74f2029d-b79d-45c3-99a8-ec0280f0b30f
+                        user_email_address: test@finxpc.com
+                        video_player_url: 'https://analytics.finfinderson.com/dashboard/users/67?ts=2019-03-29T21%3A10%3A39.685489Z'
+                        was_chrome_active: true
+                        was_paused_audio: false
+                        was_paused_browser_events: false
+                        was_paused_video: false
+                        was_recording_audio: false
+                        was_recording_browser_events: true
+                        was_recording_video: true
+                        window_id: 824
+                      - begin_ts: '2019-07-02T19:07:08.695000'
+                        chrome_version: 74.0.3729.157
+                        cpu_architecture_name: x86_64
+                        cpu_idle_time: 99227495
+                        cpu_kernel_time: 2931979
+                        cpu_model_name: Intel(R) Core(TM) i7-8850H CPU @ 2.60GHz
+                        cpu_total_time: 105411198
+                        cpu_user_time: 3251724
+                        created_at: 'Tue, 02 Jul 2019 19:07:08 GMT'
+                        display_id: '69505756'
+                        end_ts: null
+                        fin_extension_version: '0.66'
+                        id: 9bd4bfb5-9d80-4f61-9f56-4ce598fc5178
+                        is_point_event: true
+                        memory_mb_available: 122
+                        memory_mb_total: 32768
+                        num_chrome_tabs_open: 10
+                        num_cpus: 12
+                        num_displays_recorded: 2
+                        num_total_displays: 2
+                        os_name: mac
+                        schema_name: heartbeat_event
+                        tab_id: 837
+                        tab_index: 0
+                        tab_is_frontmost_in_window: true
+                        ui_arrow_keypress: 0
+                        ui_backspace_keypress: 0
+                        ui_chrome_notification_close_click: 0
+                        ui_chrome_notification_url_click: 0
+                        ui_chrome_notification_view: 0
+                        ui_copy_paste_keypress: 0
+                        ui_keypress: 0
+                        ui_modifier_arrow_keypress: 0
+                        ui_modifier_backspace_keypress: 0
+                        ui_modifier_bracket_keypress: 0
+                        ui_modifier_tab_keypress: 0
+                        ui_mouse_click: 6
+                        ui_mouse_move: 398
+                        ui_mouse_scroll: 0
+                        ui_tab_or_shift_tab_keypress: 0
+                        user_agent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.157 Safari/537.36'
+                        user_id: 74f2029d-b79d-45c3-99a8-ec0280f0b30f
+                        user_email_address: test@finxpc.com
+                        video_player_url: 'https://analytics.finfinderson.com/dashboard/users/67?ts=2019-03-29T21%3A10%3A39.685489Z'
+                        was_chrome_active: true
+                        was_paused_audio: false
+                        was_paused_browser_events: false
+                        was_paused_video: false
+                        was_recording_audio: false
+                        was_recording_browser_events: true
+                        was_recording_video: true
+                        window_id: 829
+                      - begin_ts: '2019-07-02T19:08:08.689000'
+                        chrome_version: 74.0.3729.157
+                        cpu_architecture_name: x86_64
+                        cpu_idle_time: 99292241
+                        cpu_kernel_time: 2935113
+                        cpu_model_name: Intel(R) Core(TM) i7-8850H CPU @ 2.60GHz
+                        cpu_total_time: 105483194
+                        cpu_user_time: 3255840
+                        created_at: 'Tue, 02 Jul 2019 19:08:08 GMT'
+                        display_id: '69505756'
+                        end_ts: null
+                        fin_extension_version: '0.66'
+                        id: 4c603580-2dc7-46f8-b21e-a2d149f2b28f
+                        is_point_event: true
+                        memory_mb_available: 82
+                        memory_mb_total: 32768
+                        num_chrome_tabs_open: 10
+                        num_cpus: 12
+                        num_displays_recorded: 2
+                        num_total_displays: 2
+                        os_name: mac
+                        schema_name: heartbeat_event
+                        tab_id: 837
+                        tab_index: 0
+                        tab_is_frontmost_in_window: true
+                        ui_arrow_keypress: 0
+                        ui_backspace_keypress: 0
+                        ui_chrome_notification_close_click: 0
+                        ui_chrome_notification_url_click: 0
+                        ui_chrome_notification_view: 0
+                        ui_copy_paste_keypress: 0
+                        ui_keypress: 3
+                        ui_modifier_arrow_keypress: 0
+                        ui_modifier_backspace_keypress: 0
+                        ui_modifier_bracket_keypress: 0
+                        ui_modifier_tab_keypress: 0
+                        ui_mouse_click: 10
+                        ui_mouse_move: 923
+                        ui_mouse_scroll: 14
+                        ui_tab_or_shift_tab_keypress: 0
+                        user_agent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.157 Safari/537.36'
+                        user_id: 74f2029d-b79d-45c3-99a8-ec0280f0b30f
+                        user_email_address: test@finxpc.com
+                        video_player_url: 'https://analytics.finfinderson.com/dashboard/users/67?ts=2019-03-29T21%3A10%3A39.685489Z'
+                        was_chrome_active: true
+                        was_paused_audio: false
+                        was_paused_browser_events: false
+                        was_paused_video: false
+                        was_recording_audio: false
+                        was_recording_browser_events: true
+                        was_recording_video: true
+                        window_id: 829
+                    page_size: 1000
+                    page_number: 0
+                    begin_ts: '2019-07-02T19:00:00'
+                    end_ts: '2019-07-02T20:00:00'
+                    more_results: false
+        '401':
+          description: Unauthorized
+      tags:
+        - Events
+  /api_request_logs:
+    get:
+      summary: API Request Logs
+      description: 'Returns up to one hour''s worth of api_request_logs for your organization, starting from the requested begin_ts.'
+      operationId: api_request_logs
+      parameters:
+        - in: query
+          name: begin_ts
+          schema:
+            type: string
+          description: 'The start time from which you wish to receive logs, in UTC as an ISO 8601 string.'
+          required: true
+        - in: query
+          name: end_ts
+          schema:
+            type: string
+          description: 'The end time from which you wish to receive logs, in UTC as an ISO 8601 string. Must be between 1 minute and 1 hour later than begin_ts. Default value is 1 hour later than begin_ts.'
+        - in: query
+          name: page_size
+          schema:
+            type: string
+          description: 'The number of results to return from each call to the endpoint. Must be between 100 and 10,000. Default value is 1,000.'
+        - in: query
+          name: page_number
+          schema:
+            type: string
+          description: The page number offset of results to retrieve. The first page is 0. Default value is 0
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  action:
+                    type: string
+                    description: 'The action that took place on the fin-analytics api. Is one of the following- get_heartbeat_events, post_events, get_events, put_event_ended, get_user, get_api_request_logs, get_video_upload_segment_audit_logs, get_user_administrative_logs.'
+                  api_token_prefix:
+                    type: string
+                    description: The first 16 alphanumeric characters of the API token that was used to perform the action.
+                  begin_ts:
+                    type: string
+                    description: The start time of this event as reported by the client's machine in UTC as an ISO 8601 string.
+                  id:
+                    type: string
+                    description: The unique ID for the event. This is a UUID string used by Analytics to identify an event.
+                  ip_address:
+                    type: string
+                    description: The IP address reportd by the client's machine.
+                  request_form:
+                    type: string
+                    description: 'The format the API reqest returned in. Is one of the following- json, csv.'
+                  user_agent:
+                    type: string
+                    description: The unique ID for this user and machine.
+              examples:
+                Example:
+                  value:
+                    api_request_logs:
+                      - action: get_user_administrative_logs
+                        api_token_prefix: fi39s782346b6331
+                        begin_ts: 'Mon, 18 Nov 2019 21:02:54 GMT'
+                        id: 78d4d087-ec2b-41e9-a74f-040ef1ec8241
+                        ip_address: 216.39.16.170
+                        request_format: json
+                        user_agent: PostmanRuntime/7.19.0
+                      - action: get_heartbeat_events
+                        api_token_prefix: fi39s782346b6331
+                        begin_ts: 'Mon, 18 Nov 2019 21:06:58 GMT'
+                        id: 84d235c0-6d90-4r34-9a78-c1680fie31f4
+                        ip_address: 216.39.16.170
+                        request_format: json
+                        user_agent: PostmanRuntime/7.19.0
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+      tags:
+        - Audit Logs
+  /organization_or_user_setting_update_logs:
+    get:
+      summary: Settings Update Logs
+      description: 'Returns up to one hour''s worth of organization_or_user_setting_update_logs for your organization, starting from the requested begin_ts.'
+      operationId: organization_or_user_setting_update_logs
+      parameters:
+        - in: query
+          name: begin_ts
+          schema:
+            type: string
+          description: 'The start time from which you wish to receive logs, in UTC as an ISO 8601 string.'
+          required: true
+        - in: query
+          name: end_ts
+          schema:
+            type: string
+          description: 'The end time from which you wish to receive logs, in UTC as an ISO 8601 string. Must be between 1 minute and 1 hour later than begin_ts. Default value is 1 hour later than begin_ts.'
+        - in: query
+          name: page_size
+          schema:
+            type: string
+          description: 'The number of results to return from each call to the endpoint. Must be between 100 and 10,000. Default value is 1,000.'
+        - in: query
+          name: page_number
+          schema:
+            type: string
+          description: The page number offset of results to retrieve. The first page is 0. Default value is 0
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  actor_user_id:
+                    type: string
+                    description: Unique identifier string for the user that performed the update of the setting.
+                  begin_ts:
+                    type: string
+                    description: The start time of this event as reported by the client's machine in UTC as an ISO 8601 string.
+                  id:
+                    type: string
+                    description: The unique ID for the event. This is a UUID string used by Analytics to identify an event.
+                  ip_address:
+                    type: string
+                    description: The IP address reported by the client's machine.
+                  new_value:
+                    type: string
+                    description: The new value of the setting that was altered.
+                  previous_value:
+                    type: string
+                    description: The previous value of the setting that was altered.
+                  setting_name:
+                    type: string
+                    description: The name of the setting that was altered.
+                  setting_type:
+                    type: string
+                    description: 'The type of setting that was altered, can be either organization or user.'
+                  user_agent:
+                    type: string
+                    description: The unique ID for this user and machine.
+                  user_id:
+                    type: string
+                    description: Unique identifier string for the user who's settings were updated. Null unless setting_type is user
+              examples:
+                Example:
+                  value:
+                    organization_or_user_setting_update_logs:
+                      - actor_user_id: 09d4923e-91ec-4257-bb9f-a918016b7d98
+                        begin_ts: 'Tue, 16 Jun 2020 21:33:09 GMT'
+                        id: 2c8e2e6f-e9fe-499a-bbea-dca73c729be4
+                        ip_address: 172.18.0.1
+                        new_value: 'True'
+                        previous_value: 'False'
+                        setting_name: can_view_own_stats_page
+                        setting_type: organization
+                        user_agent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.97 Safari/537.36'
+                        user_id: null
+                      - actor_user_id: 09d4923e-91ec-4257-bb9f-a918016b7d98
+                        begin_ts: 'Tue, 16 Jun 2020 21:33:09 GMT'
+                        id: 2c8e2e6f-e9fe-499a-bbea-dca73c729be4
+                        ip_address: 172.18.0.1
+                        new_value: 'True'
+                        previous_value: 'False'
+                        setting_name: can_view_own_stats_page
+                        setting_type: user
+                        user_agent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.97 Safari/537.36'
+                        user_id: w824923e-8fec-4fi2-bb9f-c928f6b7d98
+                    page_size: 100
+                    page_number: 2
+                    begin_ts: '2019-11-18T21:00:00'
+                    end_ts: '2019-11-18T22:00:00'
+                    more_results: false
+        '401':
+          description: Unauthorized
+      tags:
+        - Audit Logs
+  /user_action_logs:
+    get:
+      summary: User Action Logs
+      description: 'Returns up to one hour''s worth of user_action_logs for your organization, starting from the requested begin_ts.'
+      operationId: userLogs
+      parameters:
+        - in: query
+          name: begin_ts
+          schema:
+            type: string
+          description: 'The start time from which you wish to receive logs, in UTC as an ISO 8601 string.'
+          required: true
+        - in: query
+          name: end_ts
+          schema:
+            type: string
+          description: 'The end time from which you wish to receive logs, in UTC as an ISO 8601 string. Must be between 1 minute and 1 hour later than begin_ts. Default value is 1 hour later than begin_ts'
+        - in: query
+          name: page_size
+          schema:
+            type: string
+          description: 'The number of results to return from each call to the endpoint. Must be between 100 and 10,000. Default value is 1,000.'
+        - in: query
+          name: page_number
+          schema:
+            type: string
+          description: The page number offset of results to retrieve. The first page is 0. Default value is 0
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  action:
+                    type: string
+                    description: 'The action that took place on fin-analytics. Is one of the following- logged_in, logged_out, failed_login, created_password, mfa_rejected, password_login_locked, paused_video_recording, paused_audio_recording, paused_all_recording, viewed_periscope_dashboard.'
+                  actor_user_id:
+                    type: string
+                    description: Unique identifier string for the user that performed the action.
+                  begin_ts:
+                    type: string
+                    description: The start time of this event as reported by the client's machine in UTC as an ISO 8601 string.
+                  end_ts:
+                    type: string
+                    description: 'The end time of this event as reported by the client''s machine in UTC as an ISO 8601 string. Only viable for paused_video_recording, paused_audio_recording, and paused_all_recording.'
+                  id:
+                    type: string
+                    description: The unique ID for the event. This is a UUID string used by Analytics to identify an event.
+                  ip_address:
+                    type: string
+                    description: The IP address reportd by the client's machine.
+                  user_agent:
+                    type: string
+                    description: The unique ID for this user and machine.
+                  location:
+                    type: string
+                    description: 'Where the action took place on fin-analytics. Is one of the following- chrome_extension, saml, website'
+              examples:
+                Example:
+                  value:
+                    user_action_logs:
+                      - action: logged_in
+                        actor_user_id: f9e1efe3-11a2-41f9-9969-8a3efeec098d
+                        begin_ts: '2019-11-18T21:28:21.535195+00:00'
+                        end_ts: null
+                        id: 8d8be367-d79a-4f0b-b71e-f3e3134e782b
+                        ip_address: 122.12.0.1
+                        location: website
+                        user_agent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36'
+                      - action: logged_out
+                        actor_user_id: f9e1efe3-11a2-41f9-9969-8a3efeec098d
+                        begin_ts: '2019-11-18T21:28:38.503151+00:00'
+                        end_ts: null
+                        id: dd6671e6-a9cb-4521-936c-c66ef1a5048e
+                        ip_address: 122.12.0.1
+                        location: website
+                        user_agent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36'
+                    page_size: 100
+                    page_number: 2
+                    begin_ts: '2019-11-18T21:00:00'
+                    end_ts: '2019-11-18T22:00:00'
+                    more_results: false
+        '401':
+          description: Unauthorized
+      tags:
+        - Audit Logs
+  /user_administrative_logs:
+    get:
+      summary: User Administrative Logs
+      description: 'Returns up to one hour''s worth of user_administrative_logs for your organization, starting from the requested begin_ts.'
+      operationId: userAdminLogs
+      parameters:
+        - in: query
+          name: begin_ts
+          schema:
+            type: string
+          description: 'The start time from which you wish to receive logs, in UTC as an ISO 8601 string.'
+          required: true
+        - in: query
+          name: end_ts
+          schema:
+            type: string
+          description: 'The end time from which you wish to receive logs, in UTC as an ISO 8601 string. Must be between 1 minute and 1 hour later than begin_ts. Default value is 1 hour later than begin_ts'
+        - in: query
+          name: page_size
+          schema:
+            type: string
+          description: 'The number of results to return from each call to the endpoint. Must be between 100 and 10,000. Default value is 1,000.'
+        - in: query
+          name: page_number
+          schema:
+            type: string
+          description: The page number offset of results to retrieve. The first page is 0. Default value is 0
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  action:
+                    type: string
+                    description: 'The action that took place on fin-analytics. Is one of the following- logged_in, logged_out, failed_login, created_password, mfa_rejected, password_login_locked, paused_video_recording, paused_audio_recording, paused_all_recording, viewed_periscope_dashboard.'
+                  actor_user_id:
+                    type: string
+                    description: Unique identifier string for the user that performed the action.
+                  begin_ts:
+                    type: string
+                    description: The start time of this event as reported by the client's machine in UTC as an ISO 8601 string.
+                  end_ts:
+                    type: string
+                    description: 'The end time of this event as reported by the client''s machine in UTC as an ISO 8601 string. Only viable for paused_video_recording, paused_audio_recording, and paused_all_recording.'
+                  id:
+                    type: string
+                    description: The unique ID for the event. This is a UUID string used by Analytics to identify an event.
+                  ip_address:
+                    type: string
+                    description: The IP address reportd by the client's machine.
+                  user_agent:
+                    type: string
+                    description: The unique ID for this user and machine.
+                  user_id:
+                    type: string
+                    description: Unique identifier string for the user the action was taken on. Only viable for user_created and user_deteted
+              examples:
+                Example:
+                  value:
+                    user_administrative_logs:
+                      - action: user_created
+                        actor_user_id: 6b797451-4r75-4bc8-a8e5-de2359008876
+                        begin_ts: '2019-11-18T21:02:07.612709+00:00'
+                        id: bf85880a-78ac-4356-8c5e-36060e50ca56
+                        ip_address: 122.12.0.1
+                        user_agent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36'
+                        user_id: e8d12aaa-3524-483b-a19e-feaf82155804
+                      - action: user_deleted
+                        actor_user_id: 6b797451-4r75-4bc8-a8e5-de2359008876
+                        begin_ts: '2019-11-18T21:02:07.612709+00:00'
+                        id: bf85880a-78ac-4356-8c5e-36060e50ca56
+                        ip_address: 122.12.0.1
+                        user_agent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36'
+                        user_id: e8d12aaa-3524-483b-a19e-feaf82155804
+                    page_size: 100
+                    page_number: 2
+                    begin_ts: '2019-11-18T21:00:00'
+                    end_ts: '2019-11-18T22:00:00'
+                    more_results: false
+        '401':
+          description: Unauthorized
+      tags:
+        - Audit Logs
+  /video_upload_segment_audit_logs:
+    get:
+      summary: Video Upload Segment Audit Logs
+      description: 'Returns up to one hour''s worth of video_upload_segment_audit_logs for your organization, starting from the requested begin_ts'
+      operationId: video_upload_segment_audit_logs
+      parameters:
+        - in: query
+          name: begin_ts
+          schema:
+            type: string
+          description: 'The start time from which you wish to receive logs, in UTC as an ISO 8601 string.'
+          required: true
+        - in: query
+          name: end_ts
+          schema:
+            type: string
+          description: 'The end time from which you wish to receive logs, in UTC as an ISO 8601 string. Must be between 1 minute and 1 hour later than begin_ts. Default value is 1 hour later than begin_ts'
+        - in: query
+          name: page_size
+          schema:
+            type: string
+          description: 'The number of results to return from each call to the endpoint. Must be between 100 and 10,000. Default value is 1,000.'
+        - in: query
+          name: page_number
+          schema:
+            type: string
+          description: The page number offset of results to retrieve. The first page is 0. Default value is 0
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  actor_user_id:
+                    type: string
+                    description: Unique identifier string for the administrator that performed the action.
+                  begin_ts:
+                    type: string
+                    description: The start time of this event as reported by the client's machine in UTC as an ISO 8601 string.
+                  clip_gen_video_upload_segment_audit_log_id:
+                    type: string
+                    description: 'The id of an audit log that is recorded by the Fin Analytics backend when Video Clips are created. This is useful when performing a full reconciliation of GetObject requests. All GetObject requests performed via the Fin Analytics website (when your users watch a recording through the web player) will be preceded by a GeneratePresignedUrl event. GetObject requests performed when clips are created will not be preceded by a GeneratePreseignedUrl event, but instead will be preceded by DownloadClipSegment event. tldr; every GetObject should be preceded by either a GeneratePresignedUrl or a DownloadClipSegment event.'
+                  event_name:
+                    type: string
+                    description: 'The type of event. Is one of the following; GeneratePresignedUrl, DownloadClipSegment, DeletedByUser, DeletedByCron, GetObject, DeleteObject, PutObject'
+                  id:
+                    type: string
+                    description: The unique ID for the event. This is a UUID string used by Analytics to identify an event.
+                  ip_address:
+                    type: string
+                    description: The IP address reportd by the client's machine.
+                  recording_user_id:
+                    type: string
+                    description: Unique identifier string for the user who owns the video that was accessed.
+                  user_agent:
+                    type: string
+                    description: The unique ID for this user and machine.
+                  video_upload_segment_id:
+                    type: string
+                    description: The unique ID for video that was accessed
+              examples:
+                Example:
+                  value:
+                    video_upload_segment_audit_logs:
+                      - actor_user_id: null
+                        begin_ts: '2019-10-24T17:05:11+00:00'
+                        clip_gen_video_upload_segment_audit_log_id: null
+                        event_name: GetObject
+                        id: 5d064cc2-d24a-4f1f-b531-5fi21e05738a
+                        ip_address: 236.32.135.120
+                        recording_user_id: 85234d81-3232-4593-a155-5599fec73872
+                        user_agent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.90 Safari/537.36'
+                        video_upload_segment_id: 56734233-357d-44ef-8038-6126a5ed791e
+                      - actor_user_id: 558efad3-b3ae-419f-9252-3552890d089e
+                        begin_ts: '2019-10-24T17:05:09.588133+00:00'
+                        clip_gen_video_upload_segment_audit_log_id: null
+                        event_name: GeneratePresignedUrl
+                        id: 6542498e-0899-4639-8fo3-a384d0d61918
+                        ip_address: 236.32.135.120
+                        recording_user_id: 85234d81-3232-4593-a155-5599fec73872
+                        user_agent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.90 Safari/537.36'
+                        video_upload_segment_id: 56734233-357d-44ef-8038-6126a5ed791e
+                    page_size: 100
+                    page_number: 2
+                    begin_ts: '2019-11-18T21:00:00'
+                    end_ts: '2019-11-18T22:00:00'
+                    more_results: false
+        '401':
+          description: Unauthorized
+      tags:
+        - Audit Logs
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+  schemas:
+    User:
+      type: object
+      x-examples:
+        userExample:
+          clip_creation: external
+          created_at: 'Tue, 16 Mar 2021 00:51:32 GMT'
+          deleted_at: null
+          dom_monitoring: enabled
+          email_address: andrew@fin.com
+          employee_compensation: '16.45'
+          extension_status: default
+          id: b378181a-60fe-45ed-92fd-3f593260eff0
+          manager: ec2@fin.com
+          microphone_recording: optional
+          name: Andrew J
+          pause_analytics: enabled
+          recording_quality: highest
+          role: admin
+          start_date: 'Mon, 15 Mar 2021 00:00:00 GMT'
+          stats_page_access: enabled
+          subscribers:
+            - yoshi@fin.com
+            - chewie@fin.com
+          system_audio_recording: optional
+          tags:
+            - Product Manager
+            - Analytics
+          title: Product
+          video_recording: disabled
+          video_redaction_minutes: 5
+          video_view_access: disabled
+          viewable_user_tags:
+            - Sales
+            - Solutions Engineers
+      properties:
+        clip_creation:
+          type: string
+          enum:
+            - default
+            - internal
+            - disabled
+            - external
+        deleted_at:
+          description: 'The time this user was deleted within the fin-analytics system in the format Day, DD Mmm YYYY HH:MM:SS GMT or null.'
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          description: 'The time this user was created within the fin-analytics system in the format Day, DD Mmm YYYY HH:MM:SS GMT.'
+          readOnly: true
+        dom_monitoring:
+          type: string
+          enum:
+            - default
+            - disabled
+            - enabled
+        email_address:
+          type: string
+          description: Unique email address for the user in your organization
+        employee_compensation:
+          type: string
+          description: 'The hourly compensation for this user. Fin recommends inputting ‘fully loaded cost’ in USD (e.g. real hourly rate including benefits, etc.).This number is used for Fin’s ROI calculations and dashboards.extension_status  enum  extension_status sets the status of Fin''s Chrome Extension for this user.'
+          format: float
+        extension_status:
+          type: string
+          enum:
+            - default
+            - disabled
+            - enabled
+          description: extension_status sets the status of Fin's Chrome Extension for this user.
+        id:
+          type: string
+          description: Unique identifier string for the user in your organization.
+        manager:
+          type: string
+          description: The email address of the user's manager in your organization. manager must map to the email of another active user within your organization.
+          nullable: true
+        microphone_recording:
+          type: string
+          description: microphone_recording sets the status of microphone recording for this users Chrome Extension.
+          enum:
+            - default
+            - disabled
+            - required
+            - optional
+        name:
+          type: string
+          description: Name of the user in your organization.
+        pause_analytics:
+          type: string
+          enum:
+            - default
+            - required
+            - optional
+          description: pause_analytics sets the status of analytics collection for this users Chrome Extension.
+        recording_quality:
+          type: string
+          enum:
+            - low
+            - medium
+            - higher
+            - highest
+            - default
+          description: The quality at which video will be recorded for this user.
+        role:
+          type: string
+          enum:
+            - member
+            - viewer
+            - manager
+            - admin
+          description: 'Sets the role of the user, full detail on roles can be found here- User Roles.'
+        start_date:
+          type: string
+          description: 'The date this user started working in your organization, used to calculate tenure, in ISO 8601 YYYY-MM-DD format.'
+          nullable: true
+        stats_page_access:
+          type: string
+          description: determines if the user can view their own stats dashboard on analytics.fin.com.
+          enum:
+            - default
+            - disabled
+            - enabled
+        subscribers:
+          type: array
+          description: Array of emails for the user's subscribers in your organization. These subscribers should map to the emails of other users within your organization.
+          items:
+            type: string
+        system_audio_recording:
+          type: string
+          enum:
+            - default
+            - disabled
+            - optional
+            - required
+          description: system_audio_recording sets the status of system audio recording for this users Chrome Extension.
+        tags:
+          type: array
+          description: User tags which are applied to this user. These tags can be used to determine video permissions and also to segment analytics.
+          items:
+            type: string
+        title:
+          description: The title of this user in your organization.
+          type: string
+          nullable: true
+        video_recording:
+          type: string
+          enum:
+            - disabled
+            - required
+            - optional
+            - default
+          description: video_recording configures video recording this users Chrome Extension.
+        video_redaction_minutes:
+          description: 'The max number of minutes that a user can redact their video from the Chrome extension. Accepted values are null, 0,5,15'
+          type: number
+        video_view_access:
+          type: string
+          enum:
+            - default
+            - disabled
+            - enabled
+            - manager_reporting_chain
+          description: video_view_access determines what videos this user can view.
+        viewable_user_tags:
+          type: array
+          description: A list of user tags that this user should be able to view video and analytics. This is used to grant viewing privileges for specific groups to a user.
+          items:
+            type: string
+tags:
+  - name: Audit Logs
+  - name: Events
+  - name: Users
