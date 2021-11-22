@@ -25,7 +25,7 @@ security:
 paths:
   /users:
     get:
-      summary: Get Users
+      summary: Get User List
       description: Get a list of users and their information for your organization.
       operationId: usersGet
       parameters:
@@ -122,6 +122,11 @@ paths:
           description: Bad Request
       tags:
         - Users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
   /user:
     get:
       summary: Get User
@@ -290,7 +295,7 @@ paths:
       tags:
         - Users
     post:
-      summary: ''
+      summary: Create User
       operationId: userUpdate
       responses:
         '200':
@@ -334,8 +339,16 @@ paths:
         content:
           application/json:
             schema:
+              $ref: '#/components/schemas/User'
+          application/xml:
+            schema:
               type: object
               properties: {}
+          multipart/form-data:
+            schema:
+              type: object
+              properties: {}
+        description: ''
       tags:
         - Users
       parameters: []
@@ -348,7 +361,7 @@ paths:
         description: Email address or user id of user to update
   /events:
     post:
-      summary: Events Post
+      summary: Create Event
       description: Create a new event in Fin Analytics.
       operationId: eventsPost
       requestBody:
@@ -434,7 +447,7 @@ paths:
         '422':
           description: Unprocessable Entity
     get:
-      summary: Events get
+      summary: Get Event List
       description: 'Returns up to one hour''s worth of logged events for your organization, starting from the requested begin_ts. Currently returns events of type page_visit; more event types will be added to this service. page_visit events are a summary of a user''s time actively interacting with a specific Chrome tab. These events begin once a user becomes ''active'' on a page (navigates to it, switches tabs to it, or resumes activity from being ''idle'' on the tab already), and end once a user leaves the page or goes ''idle'' (at least 60 seconds of no movement / keystrokes, or unfocuses from Chrome all together).'
       operationId: events
       tags:
@@ -451,13 +464,11 @@ paths:
           schema:
             type: string
           description: 'The number of results to return from each call to the endpoint. Must be between 100 and 10,000. Default value is 1,000.'
-          required: true
         - in: query
           name: page_number
           schema:
             type: string
           description: The page number offset of results to retrieve. The first page is 0. Default value is 0
-          required: true
       responses:
         '200':
           description: OK
@@ -689,7 +700,7 @@ paths:
           description: Unauthorized
   /event_ended:
     put:
-      summary: Events Put
+      summary: Update Event
       description: Create a new event in Fin Analytics.
       operationId: eventsPut
       requestBody:
@@ -761,7 +772,7 @@ paths:
         - Events
   /heartbeat_events:
     get:
-      summary: Heartbeat Events
+      summary: Heartbeat List
       description: 'Returns up to one hour''s worth of logged heartbeat events for your organization, starting from the requested begin_ts. heartbeat_events are ''point events'' (no end_ts nor duration) logged every 60 seconds from each user''s machine. These events are a ''snapshot'' of machine and Chrome statistics at the moment of sampling. Each heartbeat_event rolls up machine, browser, and activity information over the 60 seconds preceding the event''s begin_ts'
       operationId: heartbeat_events
       parameters:
