@@ -43,11 +43,20 @@ paths:
           name: role
           schema:
             type: string
+            enum:
+              - admin
+              - member
+              - viewer
+              - manager
           description: 'The user role that you would like to have returned. If not specified, all roles will be returned.'
         - in: query
           name: status
           schema:
             type: string
+            enum:
+              - active
+              - deactivated
+              - all
           description: 'The status of the users you would like returned by this endpoint. If you do not specify a status, you will get all users.'
         - in: query
           name: created_at
