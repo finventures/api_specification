@@ -188,6 +188,12 @@ paths:
           description: Unauthorized
       tags:
         - Users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+        description: ''
     post:
       summary: Create User
       description: Create a new user in your organization
@@ -295,7 +301,7 @@ paths:
       tags:
         - Users
     post:
-      summary: Create User
+      summary: Update User
       operationId: userUpdate
       responses:
         '200':
