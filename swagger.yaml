@@ -375,92 +375,6 @@ paths:
         required: true
         description: Email address or user id of user to update
   /events:
-    post:
-      summary: Create Event
-      description: Create a new event in Fin Analytics.
-      operationId: eventsPost
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                email_address:
-                  type: string
-                  description: 'The email address of the fin-analytics user you are logging this event for. If a user without this email is not found in your organization, the request will be rejected.'
-                  example: kortina@finxpc.com
-                is_point_event:
-                  type: boolean
-                  description: 'Whether or not this event has a duration- if true, the event has no duration and should not have an end_ts; if false, the event has duration and will have an end_ts (though it does not need to be provided in the initial POST).All events are either point events or duration events.For point events, end_ts will be ignored.For duration events, you can either supply both begin_ts and end_ts upfront, or log begin_ts and end_ts separately so long as the same record_id and event_type is provided in both requests to identify the record.'
-                begin_ts:
-                  type: string
-                  description: 'The start time of this event in UTC as an ISO 8601 string. This param is required for point events. In cases where duration event is logged in two separate requests, an event with a begin_ts must be logged before one with an end_ts having the same event_type and record_id.'
-                  example: '2021-03-15T08:30:25-0700'
-                event_type:
-                  type: string
-                  description: A string that denotes the type of this event. Certain event_type strings are given special meaning by Fin Analytics and enable us to create more advanced custom dashboards for your organization.
-                Special event types:
-                  type: string
-                  description: 'fa_handle_case (is_point_event- false)- Most teams will have a concept of a ''case'' or a ''ticket'' that identifies a particular task that needs to be acknowledged, worked through, and finished. This event type logs a member''s working session on this ticket.fa_break (is_point_event- true)- Break events have a start and end and mark time blocks where no events are expected to happen. These windows will be incorporated into your default analytics dashboards.Event types must not begin with fa* unless they are one of the above-listed special types.'
-                end_ts:
-                  type: string
-                  description: The end time of this event in UTC as an ISO 8601 string. Ignored when is_point_event is true.
-                  example: '2021-03-15T08:45:25-0700'
-                _properties:
-                  type: object
-                  description: Optional metadata to associate with this event. You can use these properties as filters when browsing the Fin Analytics dashboards.
-                record_id:
-                  type: string
-                  description: An optional string that will uniquely track a particular entity across all events of the same event_type.
-                  example: lock-session-123
-                customer_id:
-                  type: string
-                  description: An optional identifier for your customer.
-      tags:
-        - Events
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  id:
-                    type: string
-                  event_type:
-                    type: string
-                  is_point_event:
-                    type: boolean
-                  properties:
-                    type: object
-                  record_id:
-                    type: string
-                  customer_id:
-                    type: string
-                  begin_ts:
-                    type: string
-                  end_ts:
-                    type: string
-              examples:
-                Example:
-                  value:
-                    id: eyx385
-                    event_type: fa_handle_case
-                    record_id: '12345'
-                    is_point_event: false
-                    properties:
-                      tags:
-                        - New York
-                        - Escalated
-                      ticket_category: Support
-                    customer_id: '1839'
-                    begin_ts: '2019-01-29T14:02:32.24298'
-                    end_ts: '2019-01-29T14:02:32.24298'
-        '401':
-          description: Unauthorized
-        '422':
-          description: Unprocessable Entity
     get:
       summary: Get Event List
       description: 'Returns up to one hour''s worth of logged events for your organization, starting from the requested begin_ts. Currently returns events of type page_visit; more event types will be added to this service. page_visit events are a summary of a user''s time actively interacting with a specific Chrome tab. These events begin once a user becomes ''active'' on a page (navigates to it, switches tabs to it, or resumes activity from being ''idle'' on the tab already), and end once a user leaves the page or goes ''idle'' (at least 60 seconds of no movement / keystrokes, or unfocuses from Chrome all together).'
@@ -713,78 +627,6 @@ paths:
                     more_results: false
         '401':
           description: Unauthorized
-  /event_ended:
-    put:
-      summary: Update Event
-      description: Create a new event in Fin Analytics.
-      operationId: eventsPut
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                email_address:
-                  type: string
-                  description: The email address of the fin-analytics this event was posted with.
-                  example: kortina@finxpc.com
-                end_ts:
-                  type: string
-                  description: The end time of this event in UTC as an ISO 8601 string
-                  example: '2021-03-15T08:30:25-0700'
-                event_type:
-                  type: string
-                  description: The event_type that you originally posted for this event
-                  example: fa_handle_case
-                record_id:
-                  type: string
-                  description: The entity identifier that was originally posted with your duration event.
-                  example: lock-session-123
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  id:
-                    type: string
-                  event_type:
-                    type: string
-                  is_point_event:
-                    type: boolean
-                  properties:
-                    type: object
-                  record_id:
-                    type: string
-                  customer_id:
-                    type: string
-                  begin_ts:
-                    type: string
-                  end_ts:
-                    type: string
-              examples:
-                Example:
-                  value:
-                    id: eyx385
-                    event_type: fa_handle_case
-                    record_id: '12345'
-                    is_point_event: false
-                    properties:
-                      tags:
-                        - New York
-                        - Escalated
-                      ticket_category: Support
-                    customer_id: '1839'
-                    begin_ts: '2019-01-29T14:02:32.24298'
-                    end_ts: '2019-01-29T14:02:32.24298'
-        '401':
-          description: Unauthorized
-        '422':
-          description: Unprocessable Entity
-      tags:
-        - Events
   /heartbeat_events:
     get:
       summary: Heartbeat List
@@ -1769,6 +1611,7 @@ components:
           description: A list of user tags that this user should be able to view video and analytics. This is used to grant viewing privileges for specific groups to a user.
           items:
             type: string
+      description: ''
 tags:
   - name: Audit Logs
   - name: Events
