@@ -1476,6 +1476,7 @@ components:
           viewable_user_tags:
             - Sales
             - Solutions Engineers
+      description: ''
       properties:
         clip_creation:
           type: string
@@ -1515,6 +1516,7 @@ components:
         id:
           type: string
           description: Unique identifier string for the user in your organization.
+          readOnly: true
         manager:
           type: string
           description: The email address of the user's manager in your organization. manager must map to the email of another active user within your organization.
@@ -1611,7 +1613,10 @@ components:
           description: A list of user tags that this user should be able to view video and analytics. This is used to grant viewing privileges for specific groups to a user.
           items:
             type: string
-      description: ''
+      required:
+        - email_address
+        - name
+        - role
 tags:
   - name: Audit Logs
   - name: Events
