@@ -57,7 +57,7 @@ paths:
               - active
               - deactivated
               - all
-          description: 'The status of the users you would like returned by this endpoint. If you do not specify a status, you will get all users.'
+          description: 'The status of the users you would like returned by this endpoint. If you do not specify a status, you will get active users only.'
         - in: query
           name: created_at
           schema:
